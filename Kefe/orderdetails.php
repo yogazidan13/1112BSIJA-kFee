@@ -8,6 +8,21 @@ if(!$_SESSION['admin_username'])
 }
 
 ?>
+<?php
+
+	require_once 'config.php';
+	
+	if(isset($_GET['delete_id']))
+	{
+		$stmt_delete = $DB_con->prepare('DELETE FROM orderdetails WHERE order_id =:order_id');
+		$stmt_delete->bindParam(':order_id',$_GET['delete_id']);
+		$stmt_delete->execute();
+		
+		header("Location: orderdetails.php");
+	}
+
+?>
+
 
 <!DOCTYPE html>
 <html>
@@ -80,27 +95,114 @@ if(!$_SESSION['admin_username'])
 			</ul>
         </div>
     	<div class="col-md-10 p-2 pt-5 ">
-    		<a class="nav-link text-black mt-2" href="#" ><h3>Dashboard</h3></a><hr class="bg-secondary mt-1"></li>
-        	<div class="alert alert-danger">                       
-                        &nbsp; &nbsp; Welcome to EDGE Skateshop! So, if you're looking for an Element skateboard, why not visit the EDGE Skateshop? 
-						It's that easy. If you have a favorite skate brand, 
-						this is the easiest and most straightforward way to get it.A lot of skate brands who are well known for one thing, 
-						like decks, also sell completes with 
-						their own special wheels, along with other brands for things like trucks, bearings, etc.
-                    </div>
-					<br />
+        <div id="page-wrapper">
+		 <div class="alert alert-danger">
+                        
+                          <center> <h3><strong>Order Details Management</strong> </h3></center>
+						  
+						  </div>
+						  
+						  <br />
+						  
+						  <div class="table-responsive">
+            <table class="display table table-bordered" id="example" cellspacing="0" width="100%">
+              <thead>
+                <tr>
+                  <th>Date Ordered</th>
+                  <th>Customer Name</th>
+				  <th>Item</th>
+                  <th>Price</th>
+				  <th>Quantity</th>
+				  <th>Total</th>
+				  <th>Actions</th>
+                 
+                </tr>
+              </thead>
+              <tbody>
+			  <?php
+include("config.php");
+	$stmt = $DB_con->prepare('select order_id, order_date,users.user_firstname, users.user_lastname, order_name, order_price, order_quantity, order_total from orderdetails, users where orderdetails.user_id=users.user_id and order_status="Ordered" order by order_date desc');
+	$stmt->execute();
+	
+	if($stmt->rowCount() > 0)
+	{
+		while($row=$stmt->fetch(PDO::FETCH_ASSOC))
+		{
+			extract($row);
 			
-			<div class="alert alert-default" style="background-color:black;">
+			
+			?>
+                <tr>
+                  
+                 <td><?php echo $order_date; ?></td>
+				 <td><?php echo $user_firstname; ?> <?php echo $user_lastname; ?></td>
+				 <td><?php echo $order_name; ?></td>
+				 <td>&#8369; <?php echo $order_price; ?></td>
+				 <td><?php echo $order_quantity; ?></td>
+				 <td>&#8369; <?php echo $order_total; ?></td>
+				 
+				 <td>
+				
+				 
+				
+				<a class="btn btn-danger" href="?delete_id=<?php echo $row['order_id']; ?>" title="click for delete" onclick="return confirm('Are you sure to remove this item ordered?')">
+				  <span class='glyphicon glyphicon-trash'></span>
+				  Remove Item Ordered</a>
+                  
+                  </td>
+                </tr>
+               
+              <?php
+		}
+		echo "</tbody>";
+		echo "</table>";
+		echo "</div>";
+		echo "<br />";
+		echo '<div class="alert alert-default" style="background-color:#033c73;">
                        <p style="color:white;text-align:center;">
-                       &copy 2020 Keefe | All Rights Reserved |  Design by : NakEdgy Team
+                       &copy 2016 EDGE Skateshop| All Rights Reserved |  Design by : EDGE Team
 
 						</p>
                         
                     </div>
-            
+	</div>';
+	
+		echo "</div>";
+	}
+	else
+	{
+		?>
+		
+			
+        <div class="col-xs-12">
+        	<div class="alert alert-warning">
+            	<span class="glyphicon glyphicon-info-sign"></span> &nbsp; No Data Found ...
+            </div>
         </div>
-     </div>
+        <?php
+	}
+	
+?>
+		
+	</div>
+	</div>
+					
+            
+                </div>
+            </div>
 
+           
+
+           
+        </div>
+		
+		
+		
+    </div>
+    <!-- /#wrapper -->
+
+	
+	<!-- Mediul Modal -->
      <div class="modal fade portfolio-modal text-center" role="dialog" tabindex="-1" id="portfolioModal1">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -186,10 +288,5 @@ if(!$_SESSION['admin_username'])
         return true;
     }    
 </script>
-    <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
-    <script src="assets/js/script.min.js"></script>
 </body>
-
 </html>

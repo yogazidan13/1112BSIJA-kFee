@@ -9,6 +9,28 @@ if(!$_SESSION['admin_username'])
 
 ?>
 
+<?php
+
+	require_once 'config.php';
+	
+	if(isset($_GET['delete_id']))
+	{
+		
+		$stmt_select = $DB_con->prepare('SELECT item_image FROM items WHERE item_id =:item_id');
+		$stmt_select->execute(array(':item_id'=>$_GET['delete_id']));
+		$imgRow=$stmt_select->fetch(PDO::FETCH_ASSOC);
+		unlink("item_images/".$imgRow['item_image']);
+		
+	
+		$stmt_delete = $DB_con->prepare('DELETE FROM items WHERE item_id =:item_id');
+		$stmt_delete->bindParam(':item_id',$_GET['delete_id']);
+		$stmt_delete->execute();
+		
+		header("Location: items.php");
+	}
+
+?>
+
 <!DOCTYPE html>
 <html>
 
@@ -79,18 +101,70 @@ if(!$_SESSION['admin_username'])
 			  </li>
 			</ul>
         </div>
-    	<div class="col-md-10 p-2 pt-5 ">
-    		<a class="nav-link text-black mt-2" href="#" ><h3>Dashboard</h3></a><hr class="bg-secondary mt-1"></li>
-        	<div class="alert alert-danger">                       
-                        &nbsp; &nbsp; Welcome to EDGE Skateshop! So, if you're looking for an Element skateboard, why not visit the EDGE Skateshop? 
-						It's that easy. If you have a favorite skate brand, 
-						this is the easiest and most straightforward way to get it.A lot of skate brands who are well known for one thing, 
-						like decks, also sell completes with 
-						their own special wheels, along with other brands for things like trucks, bearings, etc.
-                    </div>
-					<br />
-			
-			<div class="alert alert-default" style="background-color:black;">
+    	<div class="col-md-10 p-3 pt-5 ">
+    	<div id="page-wrapper">	
+			 <div class="alert alert-danger">
+                        
+                          <center> <h3><strong>Item Management</strong> </h3></center>
+						  
+						  </div>
+						  
+						  <br />
+						  
+						  <div class="table-responsive">
+            <table class="display table table-bordered" id="example" cellspacing="0" width="100%">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Name of Item</th>
+				  <th>Price</th>
+				  <th>Explain</th>
+				  <th>Date Added</th>
+                  <th>Actions</th>
+                 
+                </tr>
+              </thead>
+              <tbody>
+				  <?php
+	include("config.php");
+		$stmt = $DB_con->prepare('SELECT * FROM items');
+		$stmt->execute();
+		
+		if($stmt->rowCount() > 0)
+		{
+			while($row=$stmt->fetch(PDO::FETCH_ASSOC))
+			{
+				extract($row);
+				
+				
+				?>
+                <tr>
+                  <td>
+				<center> <img src="item_images/<?php echo $item_image; ?>" class="img img-rounded"  width="50" height="50" /></center>
+				 </td>
+                 <td><?php echo $item_name; ?></td>
+				 <td>&#8369; <?php echo $item_price; ?></td>
+				 <td><?php echo $item_explain; ?></td>
+				 <td><?php echo $item_date; ?></td>
+				 
+				 <td>
+				
+				 
+				
+				 <a class="btn btn-info" href="edititem.php?edit_id=<?php echo $row['item_id']; ?>" title="click for edit" onclick="return confirm('Are you sure edit this item?')"><span class='glyphicon glyphicon-pencil'></span> Edit Item</a> 
+				
+                  <a class="btn btn-danger" href="?delete_id=<?php echo $row['item_id']; ?>" title="click for delete" onclick="return confirm('Are you sure to remove this item?')"><span class='glyphicon glyphicon-trash'></span> Remove Item</a>
+				
+                  </td>
+                </tr>
+               
+              <?php
+		}
+		echo "</tbody>";
+		echo "</table>";
+		echo "</div>";
+		echo "<br />";	
+		echo '<div class="alert alert-default" style="background-color:black;">
                        <p style="color:white;text-align:center;">
                        &copy 2020 Keefe | All Rights Reserved |  Design by : NakEdgy Team
 
@@ -98,9 +172,48 @@ if(!$_SESSION['admin_username'])
                         
                     </div>
             
+        </div>';
+        		echo "</div>";
+	}
+	else
+	{
+		?>
+        <div class="col-xs-12">
+        	<div class="alert alert-warning">
+            	<span class="glyphicon glyphicon-info-sign"></span> &nbsp; No Data Found ...
+            </div>
         </div>
-     </div>
+        <?php
+	}
+	
+?>
+		
+	</div>
+	</div>
+	
+	<br />
+	<br />
+						  
+						  
+						  
+			
+			
+            
+                </div>
+            </div>
 
+           
+
+           
+        </div>
+		
+		
+		
+    </div>
+    <!-- /#wrapper -->
+
+	
+	<!-- Mediul Modal -->
      <div class="modal fade portfolio-modal text-center" role="dialog" tabindex="-1" id="portfolioModal1">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -186,10 +299,5 @@ if(!$_SESSION['admin_username'])
         return true;
     }    
 </script>
-    <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
-    <script src="assets/js/script.min.js"></script>
 </body>
-
 </html>
